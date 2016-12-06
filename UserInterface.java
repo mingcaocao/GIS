@@ -9,13 +9,18 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
 
 import javax.imageio.ImageIO;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -63,23 +68,25 @@ public class UserInterface {
 	private Image background;
 
 
-	public UserInterface (){
+	public UserInterface () throws IOException{
 		frame = new JFrame("Recommend Systm");
 		createComponents();
 		doLayout();
 		frame.setVisible(true);
 	}
 
-	public void doLayout(){
+	public void doLayout() throws IOException{
 		frame.pack();
-		frame.setSize(640, 400);
+		frame.setSize(800, 500);
 		Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
 		frame.setLocation(dim.width/2-frame.getSize().width/2, dim.height/2-frame.getSize().height/2);
 		frame.setLayout(new BorderLayout());
 		frame.add(panel1, BorderLayout.NORTH);
 		frame.add(inputPanel, BorderLayout.WEST);
-		frame.add(result, BorderLayout.CENTER);
+		frame.add(result, BorderLayout.EAST);
 		frame.add(buttonPanel, BorderLayout.SOUTH);
+		addMapPanel();
+		this.updateTextArea();
 
 	}
 
@@ -129,8 +136,14 @@ public class UserInterface {
 		panel.add(userId);
 		panel.add(userIdField);
 		panel.add(new JLabel(" "));
+		panel.add(new JLabel(" "));
+		panel.add(new JLabel(" "));
+		panel.add(new JLabel(" "));
 		panel.add(itemId);
 		panel.add(itemIdField);
+		panel.add(new JLabel(" "));
+		panel.add(new JLabel(" "));
+		panel.add(new JLabel(" "));
 		panel.add(new JLabel(" "));
 		panel.add(itemNumber);
 		panel.add(itemNumberField);
@@ -178,6 +191,47 @@ public class UserInterface {
 		panel.add(start);
 
 		return panel;
+	}
+	
+	public void addMapPanel() throws IOException {
+		try {
+			String latitude = "10";
+			String longitude = "15";
+			String imageUrl = "https://maps.googleapis.com/maps/api/staticmap?center="
+					+ latitude
+					+ ","
+					+ longitude
+					+ "&zoom=11&size=612x612&scale=2&maptype=roadmap";
+			String destinationFile = "image.jpg";
+			// read the map image from Google
+			// then save it to a local file: image.jpg
+			//
+			URL url = new URL(imageUrl);
+			InputStream is = url.openStream();
+			OutputStream os = new FileOutputStream(destinationFile);
+			byte[] b = new byte[2048];
+			int length;
+			while ((length = is.read(b)) != -1) {
+				os.write(b, 0, length);
+			}
+			is.close();
+			os.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+		// create a GUI component that loads the image: image.jpg
+		//
+		ImageIcon imageIcon = new ImageIcon((new ImageIcon("image.jpg"))
+				.getImage().getScaledInstance(630, 600,
+						java.awt.Image.SCALE_SMOOTH));
+		frame.add(new JLabel(imageIcon), BorderLayout.CENTER);
+		// show the GUI window
+	}
+	
+	private void updateTextArea(){
+		result.append("Welcome to the recommend system!");
+		result.setBorder(new TitledBorder(new EtchedBorder(), "Result"));
 	}
 
 
